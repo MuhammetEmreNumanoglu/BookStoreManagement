@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1715544492 source:c:\users\muham\onedrive\masaüstü\learnagain\main.cpp
+	<iostream>
+	<clocale>
+	<cmath>
+
+1715547258 source:c:\users\muham\onedrive\masaüstü\yazilim\learnagain\main.cpp
+	<iostream>
+	<list>
+
