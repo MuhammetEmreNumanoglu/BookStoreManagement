@@ -1,59 +1,61 @@
 #include <iostream>
 #include <list>
+#include <string>
 
 using namespace std;
 
-// INFORMATION
 class Information {
-
 protected:
-
-    string arr[8] = {"1-The Bible", "2-Don Quixote", "3-A Tale of Two Cities", "4-The Lord of the Rings", "5-The Book of Mormon", "6-The Little Prince", "7-Harry Potter and the Sorcerer’s Stone", "8-Alice in Wonderland"};
+    string bookList[8] = {
+        "1-The Bible", "2-Don Quixote", "3-A Tale of Two Cities", 
+        "4-The Lord of the Rings", "5-The Book of Mormon", 
+        "6-The Little Prince", "7-Harry Potter and the Sorcerer’s Stone", 
+        "8-Alice in Wonderland"
+    };
 
 public:
-
     string Name;
     string Password;
-
-    string *ptr = &Password;
-
-    static int Value1;
+    list<string> cart;
+    
     static string status;
 
-
-    list<string> cart;
-
     Information(string _name, string _password) : Name(_name), Password(_password) {}
+    virtual ~Information() = default;
 
-      void AddCart(){
-            cout<<" Select the book: "<<endl;
-            int a;
-            cin>>a;
-            cart.push_back(arr[a-1]);
-
+    void AddCart() {
+        cout << "Select the book (1-8): " << endl;
+        int a;
+        cin >> a;
+        if (a >= 1 && a <= 8) {
+            cart.push_back(bookList[a - 1]);
+            cout << "Book added to cart." << endl;
+        } else {
+            cout << "Invalid book selection!" << endl;
         }
-
-
-    void DeleteCart(){
-        cart.pop_back();
-
     }
 
-     void ShowBookList() {
-        cout << "**************************" << endl;
-        cout << "THE BOOK LIST: :" << endl;
-
-        for (string i : arr) {
-            cout << i << endl;
+    void DeleteCart() {
+        if (!cart.empty()) {
+            cart.pop_back();
+            cout << "Last item removed from cart." << endl;
+        } else {
+            cout << "Your cart is already empty." << endl;
         }
+    }
 
+    void ShowBookList() {
+        cout << "**************************" << endl;
+        cout << "THE BOOK LIST:" << endl;
+        for (const string& book : bookList) {
+            cout << book << endl;
+        }
         cout << "**************************" << endl;
     }
 
     static void ShowStatus() {
         cout << "**************************" << endl;
-        cout << "Cargo status:" << status << endl;
-        cout << "You are being redirected to the menu." << endl;
+        cout << "Cargo status: " << (status.empty() ? "No active cargo" : status) << endl;
         cout << "**************************" << endl;
     }
 
@@ -61,16 +63,13 @@ public:
         cout << "**************************" << endl;
         if (cart.empty()) {
             cout << "Your cart is empty." << endl;
-            cout << "You are being redirected to the menu." << endl;
-        }
-        else{
+        } else {
             cout << "Items in your cart:" << endl;
-            for (auto it = cart.begin(); it != cart.end(); ++it) {
-                cout << *it << endl;
+            for (const string& item : cart) {
+                cout << item << endl;
             }
         }
-        ShowStatus();
-
+        cout << "**************************" << endl;
     }
 
     virtual void changePassword() {
@@ -78,217 +77,146 @@ public:
         cout << "Enter the new password: ";
         cin >> new_password;
         Password = new_password;
-        ptr = &Password;
         cout << "Password changed successfully!" << endl;
     }
 
-    virtual void Welcome( ){
-
-        cout<<"welcome"<<endl;
-
+    virtual void Welcome() {
+        cout << "Welcome!" << endl;
     }
 };
 
-string Information::status;
+string Information::status = "Getting ready...";
 
-
-// USER
 class User : public Information {
 private:
-
-    string ScoreStatus[2]={"1-I like ","2-I do not like"};
+    string ScoreStatus[2] = {"I like", "I do not like"};
 
 public:
-
+    string userAddress;
     static string score;
-    int z;
-    string userAdress;
 
-    User(string _name, string _password, string _userAdress) : Information(_name, _password) {
-        userAdress = _userAdress;
-    }
-    User(string _name, string _password) : Information(_name, _password) {}
+    User(string _name, string _password, string _userAddress = "") 
+        : Information(_name, _password), userAddress(_userAddress) {}
 
+    friend void GetScore(User& obj);
 
-    friend void GetScore( User& obj);
-
-
-    void AddCart(string a) {
-        cart.push_back(a);
-    }
-
-
-    void Welcome( ) override{
-
-        cout<<" WELCOME USER! "<<endl;
+    void Welcome() override {
+        cout << "WELCOME USER: " << Name << "!" << endl;
     }
 
     void MenuUser() {
-        cout << "**************************" << endl;
-        cout << "MENU: " << endl;
-        cout << "1-Show the Cart" << endl;
-        cout << "2-Show the status of cargo" << endl;
-        cout << "3-Show the book list" << endl;
-        cout << "4-Change the password" << endl;
-        cout << "5-Delete the cart " << endl;
-        cout << "6-Exit" << endl;
-        cout << "**************************" << endl;
-        cin >> z;
-        SelectedMenuUser(z);
-    }
+        int choice;
+        while (true) {
+            cout << "**************************" << endl;
+            cout << "USER MENU: " << endl;
+            cout << "1-Show the Cart" << endl;
+            cout << "2-Show the status of cargo" << endl;
+            cout << "3-Show the book list & Add to Cart" << endl;
+            cout << "4-Change the password" << endl;
+            cout << "5-Delete last item from cart" << endl;
+            cout << "6-Logout & Score System" << endl;
+            cout << "**************************" << endl;
+            cout << "Choice: ";
+            cin >> choice;
 
-    void SelectedMenuUser(int n) {
-        switch (n) {
-            case 1:
-                ShowCart();
-                MenuUser();
-                break;
-            case 2:
-                Information::ShowStatus();
-                MenuUser();
-                break;
-
-            case 3:
-                ShowBookList();
-                Information::AddCart();
-                MenuUser();
-                break;
-            case 4:
-                changePassword();
-                MenuUser();
-                break;
-            case 5:
-                DeleteCart();
-                cout << "Deleted the cart" << endl;
-                MenuUser();
-                break;
-            default:
-                break;
+            switch (choice) {
+                case 1: ShowCart(); break;
+                case 2: Information::ShowStatus(); break;
+                case 3: ShowBookList(); AddCart(); break;
+                case 4: changePassword(); break;
+                case 5: DeleteCart(); break;
+                case 6: return;
+                default: cout << "Invalid option!" << endl; break;
+            }
         }
     }
 };
 
-string User::score;
+string User::score = "Not Scored Yet";
 
-void GetScore( User& obj){
-
+void GetScore(User& obj) {
     int f;
     cout << "**************************" << endl;
-    cout<<"Score the System "<<endl;
-    for(int i = 0; i < 2; i++){
-        cout<<obj.ScoreStatus[i]<<endl;
+    cout << "Score the System" << endl;
+    cout << "1- " << obj.ScoreStatus[0] << endl;
+    cout << "2- " << obj.ScoreStatus[1] << endl;
+    cout << "Your choice (1-2): ";
+    cin >> f;
+
+    if (f == 1 || f == 2) {
+        User::score = obj.ScoreStatus[f - 1];
+        cout << "Thank you for your feedback! Result saved as: " << User::score << endl;
+    } else {
+        cout << "Invalid score choice." << endl;
     }
-    cin>>f;
-
-    User::score = obj.ScoreStatus[f];
-
+    cout << "**************************" << endl;
 }
 
-// ADMIN
-class Admin : public User {
+class Admin : public Information {
 private:
-    string statuses[4] = {"Getting ready...(estimated delivery date -> 2-5 days later) ", "Set Out(estimated delivery date -> 1-3 days later)", "delivered", "Cancelled"};
-
+    string statuses[4] = {
+        "Getting ready...(estimated delivery date -> 2-5 days later)", 
+        "Set Out(estimated delivery date -> 1-3 days later)", 
+        "Delivered", 
+        "Cancelled"
+    };
 
 public:
+    Admin() : Information("admin", "123") {}
 
-    Admin() : User("admin", "123") {}
-    int t, y;
-
-
-    void Welcome( ) override{
-
-        cout<<" WELCOME ADMIN ! "<<endl;
+    void Welcome() override {
+        cout << "WELCOME ADMIN!" << endl;
     }
 
-    friend void SetStatus(Admin& admin, int s);
+    void UpdateStatus() {
+        int y;
+        cout << "**************************" << endl;
+        cout << "Please select the status of cargo:" << endl;
+        for (int i = 0; i < 4; ++i) {
+            cout << i + 1 << "- " << statuses[i] << endl;
+        }
+        cout << "**************************" << endl;
+        cout << "Choice: ";
+        cin >> y;
 
-    void UpdateStatus(int s = 1) {
-        switch (s) {
-            case 1:
-                status = statuses[0];
-                break;
-            case 2:
-                status = statuses[1];
-                break;
-            case 3:
-                status = statuses[2];
-                break;
-            case 4:
-                status = statuses[3];
-                break;
+        if (y >= 1 && y <= 4) {
+            status = statuses[y - 1];
+            cout << "The status of cargo has been changed." << endl;
+        } else {
+            cout << "Invalid option!" << endl;
         }
     }
 
-
     void MenuAdmin() {
+        int choice;
         while (true) {
             cout << "**************************" << endl;
-            cout << "MENU: " << endl;
-            cout << "1-Show the Cart" << endl;
-            cout << "2-Change the status of cargo" << endl;
-            cout << "3-Show the status of cargo" << endl;
-            cout << "4-Show the book list" << endl;
-            cout << "5-Change the password" << endl;
-            cout << "6-Exit" << endl;
+            cout << "ADMIN MENU: " << endl;
+            cout << "1-Change the status of cargo" << endl;
+            cout << "2-Show the status of cargo" << endl;
+            cout << "3-Show the book list" << endl;
+            cout << "4-Change Admin password" << endl;
+            cout << "5-Logout" << endl;
             cout << "**************************" << endl;
+            cout << "Choice: ";
+            cin >> choice;
 
-            cin >> t;
-
-            switch (t) {
-                case 1:
-                    ShowCart();
-                    break;
-                case 2:
-                    cout << "**************************" << endl;
-                    cout << "You are being redirected to status of the cargo menu." << endl;
-                    cout << "Please select the status of cargo:" << endl;
-                    for (int i = 0; i < 4; ++i) {
-                        cout << i + 1 << "- " << statuses[i] << endl;
-                    }
-                    cout << "**************************" << endl;
-                    cin >> y;
-                    if (y >= 1 && y <= 4) {
-                        SetStatus(*this, y);
-                        cout << "The status of your cargo has been changed." << endl;
-                        cout << "You are being redirected to the menu." << endl;
-                    } else {
-                        cout << "Invalid option! Please try again." << endl;
-                    }
-                    break;
-
-                case 3:
-                    Information::ShowStatus();
-                    break;
-
-
-                case 4:
-                    ShowBookList();
-                    cout << "You are being redirected to the menu." << endl;
-                    break;
-                case 5:
-                    changePassword();
-                    break;
-                case 6:
-                    return;
-                default:
-                    cout << "Invalid option! Please try again." << endl;
-                    break;
+            switch (choice) {
+                case 1: UpdateStatus(); break;
+                case 2: Information::ShowStatus(); break;
+                case 3: ShowBookList(); break;
+                case 4: changePassword(); break;
+                case 5: return;
+                default: cout << "Invalid option!" << endl; break;
             }
         }
     }
-} admin;
-
-int Information::Value1 = 0;
-
-void SetStatus(Admin& admin, int s) {
-    admin.UpdateStatus(s);
-}
+};
 
 int main() {
-
-    User us1("muhammet", "123", "Üsküdar");
+    User us1("muhammet", "123", "Uskudar");
     User us2("emre", "123");
+    Admin adminObj;
 
     int loginType;
     string username, password;
@@ -301,65 +229,44 @@ int main() {
         cout << "2-User" << endl;
         cout << "3-Exit" << endl;
         cout << "**************************" << endl;
+        cout << "Choice: ";
         cin >> loginType;
 
         if (loginType == 1) {
-            while (true) {
-                cout << "**************************" << endl;
-                cout << "Enter username:";
-                cin >> username;
-                cout << "Enter Password:";
-                cin >> password;
-                cout << "**************************" << endl;
+            cout << "Enter username: "; cin >> username;
+            cout << "Enter Password: "; cin >> password;
 
-                if (username == "admin" && password == admin.Password) {
-                    admin.Welcome();
-                    admin.MenuAdmin();
-                    break;
-
-                } else {
-                    cout << "**************************" << endl;
-                    cout << "Invalid username or password! Please try again." << endl;
-                    cout << "**************************" << endl;
-                }
+            if (username == adminObj.Name && password == adminObj.Password) {
+                adminObj.Welcome();
+                adminObj.MenuAdmin();
+            } else {
+                cout << "Invalid admin credentials!" << endl;
             }
-        } else if (loginType == 2) {
-            while (true) {
-                cout << "**************************" << endl;
-                cout << "Enter username:";
-                cin >> username;
-                cout << "Enter Password:";
-                cin >> password;
-                cout << "**************************" << endl;
+        } 
+        else if (loginType == 2) {
+            cout << "Enter username: "; cin >> username;
+            cout << "Enter Password: "; cin >> password;
 
-                if (username == "muhammet" && password == us1.Password) {
-                    us1.Welcome();
-                    us1.MenuUser();
-                    GetScore(us1);
-                    break;
-                }
-                if (username == "emre" && password == us2.Password) {
-                    us2.Welcome();
-                    us2.MenuUser();
-                    GetScore(us2);
-                    break;
-                }
-                    else {
-                    cout << "**************************" << endl;
-                    cout << "Invalid username or password! Please try again." << endl;
-                    cout << "**************************" << endl;
-                }
+            if (username == us1.Name && password == us1.Password) {
+                us1.Welcome();
+                us1.MenuUser();
+                GetScore(us1);
+            } else if (username == us2.Name && password == us2.Password) {
+                us2.Welcome();
+                us2.MenuUser();
+                GetScore(us2);
+            } else {
+                cout << "Invalid username or password!" << endl;
             }
-        } else if (loginType == 3) {
+        } 
+        else if (loginType == 3) {
+            cout << "Exiting the program. Goodbye!" << endl;
             break;
-        } else {
-            cout << "**************************" << endl;
+        } 
+        else {
             cout << "Invalid login type! Please try again." << endl;
-            cout << "***************************" << endl;
         }
     }
 
     return 0;
 }
-
-
